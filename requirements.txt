@@ -1,0 +1,5 @@
+clickhouse-driver[lz4,zstd]
+tqdm
+configargparse
+fabric
+halo
