@@ -15,6 +15,18 @@ period that is being re-distributed.
 ## Workflow
 1. The clickhouse-server configuration, either locally or from a remote server, is loaded.
 2. The configuration is parsed to discover the servers in the cluster.
+3. A staging table is made on each server in the same database that's the same schema as the table that's going to be
+re-distributed.
+4. Pull all the partitions attached to the table to be re-distributed
+5. Caculate which partitions are absent from one or more servers in the cluster
+6. For each partition that needs to be re-distributed, detatch it from the table to be re-distributed
+7. Using SSH, move the partition from the source table's detatched directory to the staging table's detatched directory
+8. List all the partitions in the deatched directory, and reattach them to the staging table (it's done this way to catch
+any orphaned partitions)
+9. Execute a INSERT INTO ... SELECT * FROM ... command to copy all the data in the staging table back into the distributed
+table, effectively re-distributing the data to new nodes. 
+10. Truncate the staging table
+11. Loop back to #6. 
 
 # Assumptions
 There are quite a few assumptions made in this script about your environment.
